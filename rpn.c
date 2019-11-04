@@ -24,10 +24,8 @@ char* is_instruction(char* instruction){
   }
   return NULL;
 }
-
-
 //Crée la liste
-_link* make_link(int val, _link* next){
+_link* make_link(int val, _link* list){
   _link* link = (_link*)malloc(sizeof(_link));
 
   if(link == NULL)
@@ -35,17 +33,36 @@ _link* make_link(int val, _link* next){
     fprintf(stderr, "Out of memory\n");
     exit(1);
   }
-
   link->value = val;
-  link->next = next;
+  link->next = list;
 
   return link;
 }
+//Ajoute un élement au debut de la pile
+_link* push_link(int value, _link* list){
+    _link* current;
+
+    if(list == NULL){
+      list = make_link(value, NULL);
+    }else{
+      current = list;
+        while(current->next != NULL){
+          current = current->next;
+        }
+        current->next = make_link(value, NULL);
+    }
+    return list;
+}
+
+
 //Affiche la liste
-void display_link(_link* list){
-    printf("%d\n", list->value);
+void display_link(int i, _link* list){
+  if (i == 0)
+    printf("%d", list->value);
+  if (i== 1 )
+    printf(" %d", list->value);
   if (list->next != NULL)
-   display_link(list->next);
+   display_link(1, list->next);
 }
 //Libère l'espace memoire utilisé par la liste
 void free_link(_link* list)
@@ -70,12 +87,12 @@ _link* pop_link(_link* list){
 
 //Convertie les valeur en int
 _link* init_link(_link* list, char* value){
-  if (isdigit(value[0]))
+  if ( isdigit(value[0]) || (value[0] == '-' && isdigit(value[1])) )
   {
     int n;
     n = (int) strtol(value, NULL, 10);
 
-    return make_link(n, list);
+    return push_link(n, list);
   }else{
     fprintf(stderr, "Value is not allowed\n");
     exit(3);
@@ -95,6 +112,17 @@ int get_link_n_last_value(int n, _link* list){
     return get_link_n_last_value(n-1, list->next);
   return n;
 }
+//Affiche les erreur
+void display_error(_link* list){
+
+  if(list != NULL){
+    display_link(0,list);
+    fprintf(stderr, " ERROR");
+  }
+  else
+    fprintf(stderr, "ERROR");
+  exit(1);
+}
 
 //Execute les instructions
 _link* do_instruction(_link* list, char* instruction){
@@ -102,40 +130,66 @@ _link* do_instruction(_link* list, char* instruction){
   int result = 0;
   _link* newlink = NULL;
 
-  if (strcmp(instruction, op[0]) == 0)
+  if (strcmp(instruction, op[0]) == 0)//ADD
   {
-    result = get_link_n_last_value(1,list) + list->value;
+    result = list->value + get_link_n_last_value(1,list);
     for (int i = 0; i < 2; ++i)
     {
       list = pop_link(list);
     }
-    newlink = make_link(result,list);
+    newlink = push_link(result,list);
   }else if (strcmp(instruction, op[1]) == 0)
   {
-    result = get_link_n_last_value(1,list) - list->value;
+    result = list->value - get_link_n_last_value(1,list);
     for (int i = 0; i < 2; ++i)
     {
       list = pop_link(list);
     }
-    newlink = make_link(result,list);
+    newlink = push_link(result,list);
   }else if (strcmp(instruction, op[2]) == 0)
   {
-    result = get_link_n_last_value(1,list) * list->value;
+    result = list->value * get_link_n_last_value(1,list);
     for (int i = 0; i < 2; ++i)
     {
       list = pop_link(list);
     }
-    newlink = make_link(result,list);
+    newlink = push_link(result,list);
   }else if (strcmp(instruction, op[3]) == 0)
   {
+    int dividend = list->value;
+    int diviser = get_link_n_last_value(1,list);
 
+    for (int i = 0; i < 2; ++i)
+    {
+      list = pop_link(list);
+    }
+
+    if(diviser != 0){
+      result = dividend / diviser;
+    }else{
+      display_error(list);
+    }
+    newlink = push_link(result,list);
 
   }else if (strcmp(instruction, op[4]) == 0)
   {
+    int dividend = list->value;
+    int diviser = get_link_n_last_value(1,list);
 
+    for (int i = 0; i < 2; ++i)
+    {
+      list = pop_link(list);
+    }
+
+    if(diviser != 0){
+      result = dividend % diviser;
+    }else{
+      display_error(list);
+    }
+    newlink = push_link(result,list);
   }else if (strcmp(instruction, op[5]) == 0)
   {
-
+    newlink = pop_link(list);
   }else if (strcmp(instruction, op[6]) == 0)
   {
 
@@ -168,7 +222,7 @@ int main(){
   }
 
 
-  display_link(list);
+  display_link(0, list);
 
 
 
