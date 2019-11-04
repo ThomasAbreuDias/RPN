@@ -99,9 +99,9 @@ _link* init_link(_link* list, char* value){
   }
 }
 //Revois la longeur de la pile
-int get_link_length(int i, _link* list){
+int get_last_link_indice(int i, _link* list){
   if(list->next != NULL)
-    return get_link_length(++i, list->next);
+    return get_last_link_indice(++i, list->next);
   return i;
 }
 
@@ -134,7 +134,7 @@ void display_error(_link* list){
 _link* do_instruction(_link* list, char* instruction){
   char op[9][4] = {"ADD", "SUB", "MUL", "DIV", "MOD", "POP", "DUP", "SWP", "ROL"};
   int result = 0;
-  int lenght = get_link_length(0, list);
+  int lenght = get_last_link_indice(0, list);
   _link* newlink = NULL;
 
   if (strcmp(instruction, op[0]) == 0)//ADD
@@ -226,14 +226,27 @@ _link* do_instruction(_link* list, char* instruction){
       list = pop_link(list);
       display_error(list);
     }
-
     result = get_n_link(lenght,list)->value;
     get_n_link(lenght,list)->value = get_n_link((lenght-1),list)->value;
     get_n_link(lenght-1,list)->value = result;
     newlink = list;
   }else if (strcmp(instruction, op[8]) == 0)//ROL
   {
+    _link* lastlink = get_n_link(lenght,list);
+    _link* currentlink;
+    int n = lastlink->value; //L'indice commence a 0 d'où le -1
+    int tmp;
+    get_n_link((lenght+1)-n,list);
+    get_n_link(lenght-1,list)->next = NULL;
+    free(lastlink);
+    lenght = get_last_link_indice(0,list);
+    currentlink = get_n_link((lenght+1)-n,list);
+    tmp = currentlink->value;
+    get_n_link((lenght)-n,list)->next = currentlink->next ;
+    free(currentlink);
+    push_link(tmp, list);
 
+    newlink = list;
   }
   return newlink;
 }
@@ -255,13 +268,7 @@ int main(){
       list = do_instruction(list, instruction);
     }
   }
-
-
   display_link(0, list);
-
-
-
   free_link(list);
-
   return 0;
 }
