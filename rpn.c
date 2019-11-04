@@ -98,29 +98,35 @@ _link* init_link(_link* list, char* value){
     exit(3);
   }
 }
+//Revois la longeur de la pile
+int get_link_length(int i, _link* list){
+  if(list->next != NULL)
+    return get_link_length(++i, list->next);
+  return i;
+}
 
-//Recupère la n valeur
-int get_link_n_last_value(int n, _link* list){
+//Recupère le n maillion
+_link* get_n_link(int n, _link* list){
   if (list == NULL)
   {
     fprintf(stderr, "Empty list\n");
     exit(3);
   }
   if(n <= 0)
-    return list->value;
+    return list;
   if (list->next != NULL)
-    return get_link_n_last_value(n-1, list->next);
-  return n;
+    return get_n_link(n-1, list->next);
+  return list;
 }
 //Affiche les erreur
 void display_error(_link* list){
 
   if(list != NULL){
     display_link(0,list);
-    fprintf(stderr, " ERROR");
+    printf(" ERROR");
   }
   else
-    fprintf(stderr, "ERROR");
+    printf("ERROR");
   exit(1);
 }
 
@@ -128,36 +134,53 @@ void display_error(_link* list){
 _link* do_instruction(_link* list, char* instruction){
   char op[9][4] = {"ADD", "SUB", "MUL", "DIV", "MOD", "POP", "DUP", "SWP", "ROL"};
   int result = 0;
+  int lenght = get_link_length(0, list);
   _link* newlink = NULL;
 
   if (strcmp(instruction, op[0]) == 0)//ADD
   {
-    result = list->value + get_link_n_last_value(1,list);
+    if(list->next == NULL){
+      list = pop_link(list);
+      display_error(list);
+    }
+    result = list->value + get_n_link(1,list)->value;
     for (int i = 0; i < 2; ++i)
     {
       list = pop_link(list);
     }
     newlink = push_link(result,list);
-  }else if (strcmp(instruction, op[1]) == 0)
+  }else if (strcmp(instruction, op[1]) == 0)//SUB
   {
-    result = list->value - get_link_n_last_value(1,list);
+    if(list->next == NULL){
+      list = pop_link(list);
+      display_error(list);
+    }
+    result = list->value - get_n_link(1,list)->value;
     for (int i = 0; i < 2; ++i)
     {
       list = pop_link(list);
     }
     newlink = push_link(result,list);
-  }else if (strcmp(instruction, op[2]) == 0)
+  }else if (strcmp(instruction, op[2]) == 0)//MUL
   {
-    result = list->value * get_link_n_last_value(1,list);
+    if(list->next == NULL){
+      list = pop_link(list);
+      display_error(list);
+    }
+    result = list->value * get_n_link(1,list)->value;
     for (int i = 0; i < 2; ++i)
     {
       list = pop_link(list);
     }
     newlink = push_link(result,list);
-  }else if (strcmp(instruction, op[3]) == 0)
+  }else if (strcmp(instruction, op[3]) == 0)//DIV
   {
+    if(list->next == NULL){
+      list = pop_link(list);
+      display_error(list);
+    }
     int dividend = list->value;
-    int diviser = get_link_n_last_value(1,list);
+    int diviser = get_n_link(1,list)->value;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -171,10 +194,14 @@ _link* do_instruction(_link* list, char* instruction){
     }
     newlink = push_link(result,list);
 
-  }else if (strcmp(instruction, op[4]) == 0)
+  }else if (strcmp(instruction, op[4]) == 0)//MOD
   {
+    if(list->next == NULL){
+      list = pop_link(list);
+      display_error(list);
+    }
     int dividend = list->value;
-    int diviser = get_link_n_last_value(1,list);
+    int diviser = get_n_link(1,list)->value;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -187,16 +214,24 @@ _link* do_instruction(_link* list, char* instruction){
       display_error(list);
     }
     newlink = push_link(result,list);
-  }else if (strcmp(instruction, op[5]) == 0)
+  }else if (strcmp(instruction, op[5]) == 0)//POP
   {
     newlink = pop_link(list);
-  }else if (strcmp(instruction, op[6]) == 0)
+  }else if (strcmp(instruction, op[6]) == 0)//DUP
   {
-
-  }else if (strcmp(instruction, op[7]) == 0)
+    newlink = push_link(list->value, list);
+  }else if (strcmp(instruction, op[7]) == 0)//SWP
   {
+    if(list->next == NULL){
+      list = pop_link(list);
+      display_error(list);
+    }
 
-  }else if (strcmp(instruction, op[8]) == 0)
+    result = get_n_link(lenght,list)->value;
+    get_n_link(lenght,list)->value = get_n_link((lenght-1),list)->value;
+    get_n_link(lenght-1,list)->value = result;
+    newlink = list;
+  }else if (strcmp(instruction, op[8]) == 0)//ROL
   {
 
   }
