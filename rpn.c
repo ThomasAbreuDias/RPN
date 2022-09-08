@@ -1,4 +1,4 @@
-/**-Auteur : Thomas ABREU DIAS aka BOYA-**/
+/**-Auteur : Thomas ABREU DIAS-**/
 /*-Dépot GIT : https://github.com/ThomasAbreuDias/RPNhttps://github.com/ThomasAbreuDias/RPN
 */
 #include <stdlib.h>
